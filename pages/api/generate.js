@@ -46,7 +46,9 @@ KNOWLEDGE BASE:${progContext}${faqContext}`;
 
     const data = await response.json();
     if (data.error) return res.status(500).json({ error: data.error.message });
-    const reply = data.content?.find(b => b.type === 'text')?.text || 'Something went wrong.';
+    if (data.error) return res.status(500).json({ error: `Anthropic error: ${data.error.message || JSON.stringify(data.error)}` });
+if (!data.content) return res.status(500).json({ error: `Unexpected response: ${JSON.stringify(data)}` });
+const reply = data.content?.find(b => b.type === 'text')?.text || 'Something went wrong.';
     res.status(200).json({ reply });
   } catch (e) {
     res.status(500).json({ error: e.message });
