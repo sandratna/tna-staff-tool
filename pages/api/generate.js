@@ -1,29 +1,22 @@
-// pages/api/generate.js
-// Calls Anthropic API server-side — API key never exposed to browser
-
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).end();
 
-  const { parentMessage, programme, programmes, faqs } = req.body;
+  const { parentMsg, prog, programmes, faqs } = req.body;
+  if (!parentMsg) return res.status(400).json({ error: 'No message provided' });
 
-  if (!parentMessage) {
-    return res.status(400).json({ error: 'parentMessage is required' });
-  }
+  const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
+  if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'Missing ANTHROPIC_API_KEY' });
 
-  const progContext = programme
-    ? `\nPROGRAMME SELECTED:\nName: ${programme.name}\nSubject: ${programme.subject}\nLevel: ${programme.level}\nSchedule: ${programme.schedule}\nFee: ${programme.fee}\nClass size: ${programme.size}\nTopics: ${programme.topics}\nWho it's for: ${programme.who}\nNotes: ${programme.notes}`
-    : '\nALL PROGRAMMES:\n' + (programmes || []).map(p => `- ${p.name} (${p.level}): ${p.fee}. ${p.notes}`).join('\n');
+  const progContext = prog
+    ? `\nPROGRAMME: ${prog.name}\nSubject: ${prog.subject}\nLevel: ${prog.level}\nSchedule: ${prog.schedule}\nFee: ${prog.fee}\nClass size: ${prog.class_size || prog.size || ''}\nCoverage: ${prog.topics}\nWho it's for: ${prog.who_is_it_for || prog.who || ''}\nNotes: ${prog.notes || ''}`
+    : '\nALL PROGRAMMES:\n' + (programmes || []).map(p => `- ${p.name} (${p.level || ''}): ${p.fee || ''}. ${p.notes || ''}`).join('\n');
 
   const faqContext = (faqs || []).length
-    ? '\n\nFAQs:\n' + faqs.map(f => `Q: ${f.q}\nA: ${f.a}`).join('\n\n')
+    ? '\n\nFAQs:\n' + faqs.map(f => `Q: ${f.question || f.q}\nA: ${f.answer || f.a}`).join('\n\n')
     : '';
 
   const system = `You are a WhatsApp reply assistant for The Nuggets Academy, a small-group academic coaching centre in Singapore.
-
-Write in the warm, calm voice of Sandra Lim, the founder — like a trusted mentor, never a salesperson.
-
+Write in the warm, calm voice of Sandra Lim, the founder — a trusted mentor, never a salesperson.
 Rules:
 - Short paragraphs, conversational WhatsApp tone
 - No bullet points — natural flowing text only
@@ -32,40 +25,30 @@ Rules:
 - If a specific detail is missing, say "do drop us a message and we can share more" — never invent details
 - End with a clear next step or invitation
 - Sign off: "— The Nuggets Academy team"
-- Max 3–4 short paragraphs
-- One or two emojis is fine, not on every sentence
-
-KNOWLEDGE BASE:
-${progContext}
-${faqContext}`;
+- Max 3–4 short paragraphs. One or two emojis is fine.
+KNOWLEDGE BASE:${progContext}${faqContext}`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
+        'x-api-key': ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
         system,
-        messages: [{ role: 'user', content: `Parent's WhatsApp message: "${parentMessage}"\n\nWrite a warm, ready-to-send WhatsApp reply.` }],
-      }),
+        messages: [{ role: 'user', content: `Parent's message: "${parentMsg}"\n\nWrite a warm ready-to-send WhatsApp reply.` }]
+      })
     });
 
     const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error?.message || 'Anthropic API error');
-    }
-
-    const reply = data.content?.find(b => b.type === 'text')?.text || '';
-    return res.status(200).json({ reply });
-
-  } catch (error) {
-    console.error('Generate error:', error);
-    return res.status(500).json({ error: 'Failed to generate reply' });
+    if (data.error) return res.status(500).json({ error: data.error.message });
+    const reply = data.content?.find(b => b.type === 'text')?.text || 'Something went wrong.';
+    res.status(200).json({ reply });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
 }
