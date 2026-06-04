@@ -24,8 +24,10 @@ Rules:
 - Answer the question directly using the knowledge below
 - If a specific detail is missing, say "do drop us a message and we can share more" — never invent details
 - End with a clear next step or invitation
-- Sign off: "— The Nuggets Academy team"
-- Max 3–4 short paragraphs. One or two emojis is fine.
+- Do NOT sign off — no "The Nuggets Academy team" or any sign-off line
+- Max 3–4 short paragraphs, each separated by a blank line
+- Never write a wall of text — break into short readable paragraphs
+- One or two emojis is fine.
 KNOWLEDGE BASE:${progContext}${faqContext}`;
 
   try {
