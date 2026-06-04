@@ -298,9 +298,14 @@ export default function Home() {
         .chip { background: #F0E9D8; border: none; border-radius: 20px; padding: 5px 13px; font-size: 12px; font-weight: 500; color: #555; cursor: pointer; font-family: 'Poppins', sans-serif; transition: all 0.15s; }
 .chip:hover { background: #FFD817; color: #000; }
         /* Buttons */
-        .gen-btn { background: #FFD817; color: #000; border: none; border-radius: 12px; padding: 13px 28px; font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(255,216,23,0.35); }
+        .gen-btn { background: #000; color: #FFD817; border: none; border-radius: 8px; padding: 14px 32px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; letter-spacing: 0.03em; }
+.gen-btn:hover:not(:disabled) { background: #222; transform: translateY(-1px); }
         .gen-btn:hover:not(:disabled) { background: #E6C200; transform: translateY(-1px); }
         .gen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-loading { display: inline-flex; align-items: center; gap: 6px; }
+.btn-loading span { width: 6px; height: 6px; background: #000; border-radius: 50%; animation: bounce 1s infinite; display: inline-block; }
+.btn-loading span:nth-child(2) { animation-delay: 0.15s; }
+.btn-loading span:nth-child(3) { animation-delay: 0.3s; }
         .retry-btn { background: none; border: none; font-family: 'Poppins', sans-serif; font-size: 13px; color: #CC4444; text-decoration: underline; cursor: pointer; margin-left: 10px; }
         .refresh-btn { background: none; border: none; font-size: 12px; cursor: pointer; color: #888; font-family: 'Poppins', sans-serif; margin-left: auto; }
         .refresh-btn:hover { color: #1A1A1A; }
@@ -310,7 +315,9 @@ export default function Home() {
         .output-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid #E8DFC8; background: #FFF9D0; border-radius: 10px 10px 0 0; }
         .output-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
         .output-body { padding: 18px 20px; font-size: 14px; line-height: 1.8; white-space: pre-wrap; min-height: 80px; }
-        .copy-btn { background: #000; border: none; border-radius: 6px; padding: 6px 16px; font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600; color: #FFD817; cursor: pointer; transition: all 0.15s; }
+        .copy-btn { background: #FFD817; border: none; border-radius: 8px; padding: 7px 18px; font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 700; color: #000; cursor: pointer; transition: all 0.15s; letter-spacing: 0.02em; }
+.copy-btn:hover { background: #E6C200; }
+.copy-btn.copied { background: #000; color: #FFD817; }
         .copy-btn:hover { background: #2C2C2C; }
         .copy-btn.copied { background: #2E8B57; color: #fff; }
 
