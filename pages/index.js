@@ -187,8 +187,10 @@ export default function Home() {
                       </button>
                     </div>
                     <div className="output-body">
-                      {generating ? <div className="dots"><span/><span/><span/></div> : reply}
-                    </div>
+              {generating ? <div className="dots"><span/><span/><span/></div> : reply.split('\n\n').map((para, i) => (
+                <p key={i} style={{marginBottom: '12px'}}>{para}</p>
+              ))}
+            </div>
                   </div>
                 )}
               </div>
