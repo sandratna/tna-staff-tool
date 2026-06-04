@@ -293,9 +293,8 @@ export default function Home() {
 
         /* Chips */
         .chips { display: flex; flex-wrap: wrap; gap: 7px; }
-        .chip { background: #fff; border: 1.5px solid #E8DFC8; border-radius: 20px; padding: 5px 13px; font-size: 12px; font-weight: 500; color: #555; cursor: pointer; font-family: 'Poppins', sans-serif; transition: all 0.15s; }
-        .chip:hover { border-color: #E6C200; color: #000; background: #FFF9D0; }
-
+        .chip { background: #F0E9D8; border: none; border-radius: 20px; padding: 5px 13px; font-size: 12px; font-weight: 500; color: #555; cursor: pointer; font-family: 'Poppins', sans-serif; transition: all 0.15s; }
+.chip:hover { background: #FFD817; color: #000; }
         /* Buttons */
         .gen-btn { background: #FFD817; color: #000; border: none; border-radius: 12px; padding: 13px 28px; font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(255,216,23,0.35); }
         .gen-btn:hover:not(:disabled) { background: #E6C200; transform: translateY(-1px); }
