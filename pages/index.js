@@ -123,7 +123,7 @@ export default function Home() {
               </div>
             )}
 
-            {/* REPLY */}
+            {/* REPLY GENERATOR */}
             {!loading && view === 'reply' && (
               <div>
                 <h1 className="section-title">Parent Reply Generator</h1>
@@ -146,13 +146,13 @@ export default function Home() {
                     <label className="field-label">Programme context <span className="label-sub">— optional</span></label>
                     <select value={selectedProg} onChange={e => setSelectedProg(e.target.value)}>
                       <option value="">— All programmes / not sure yet —</option>
-                      {programmes.map(p => <option key={p.name} value={p.name}>{p.name} {p.subject ? `— ${p.subject}` : ''}</option>)}
+                      {programmes.map(p => <option key={p.name + p.subject} value={p.name}>{p.name}{p.subject ? ` — ${p.subject}` : ''}</option>)}
                     </select>
                   </div>
                   <div>
                     <button className="gen-btn" onClick={generateReply} disabled={generating || !parentMsg.trim()}>
                       {generating
-                        ? <span className="btn-loading"><span/><span/><span/> Generating reply...</span>
+                        ? <span className="btn-loading"><span/><span/><span/><span style={{marginLeft:6}}>Generating reply...</span></span>
                         : '✦ Generate Reply'}
                     </button>
                   </div>
@@ -169,8 +169,8 @@ export default function Home() {
                     <div className="output-body">
                       {generating
                         ? <div className="dots"><span/><span/><span/></div>
-                        : reply.split('\n\n').map((para, i) => (
-                            <p key={i} style={{marginBottom:'14px', lineHeight:'1.8'}}>{para}</p>
+                        : reply.split('\n\n').filter(p => p.trim()).map((para, i) => (
+                            <p key={i}>{para}</p>
                           ))}
                     </div>
                   </div>
@@ -183,31 +183,48 @@ export default function Home() {
               <div>
                 <h1 className="section-title">Programme Reference</h1>
                 <p className="section-sub">Tap any programme to see full details.</p>
+
                 {detailProg ? (
                   <div className="detail-card">
-                    <button className="back-btn" onClick={() => setDetailProg(null)}>← Back</button>
+                    <button className="back-btn" onClick={() => setDetailProg(null)}>← Back to all programmes</button>
+                    <div className={`tag ${getTagClass(detailProg.subject)}`} style={{marginBottom:12}}>{detailProg.subject}</div>
                     <h2 className="detail-name">{detailProg.name}</h2>
                     <div className="detail-grid">
-                      {[['Subject',detailProg.subject],['Level',detailProg.level],['Schedule',detailProg.schedule],['Fee',detailProg.fee],['Class Size',detailProg.class_size]].filter(([,v])=>v).map(([k,v])=>(
+                      {[['Level', detailProg.level], ['Schedule', detailProg.schedule], ['Fee', detailProg.fee], ['Class Size', detailProg.class_size]].filter(([,v]) => v).map(([k,v]) => (
                         <div key={k} className="detail-item">
                           <div className="detail-key">{k}</div>
                           <div className="detail-val">{v}</div>
                         </div>
                       ))}
                     </div>
-                    <hr className="divider"/>
-                    {detailProg.topics && <div className="detail-item mb"><div className="detail-key">Topics Covered</div><div className="detail-val">{detailProg.topics}</div></div>}
-                    {detailProg.who_is_it_for && <div className="detail-item mb"><div className="detail-key">Who It's For</div><div className="detail-val">{detailProg.who_is_it_for}</div></div>}
-                    {detailProg.notes && <div className="detail-item"><div className="detail-key">Notes for Parents</div><div className="detail-val">{detailProg.notes}</div></div>}
+                    {detailProg.topics && (
+                      <div className="detail-section">
+                        <div className="detail-key">Topics Covered</div>
+                        <div className="detail-val">{detailProg.topics}</div>
+                      </div>
+                    )}
+                    {detailProg.who_is_it_for && (
+                      <div className="detail-section">
+                        <div className="detail-key">Who It's For</div>
+                        <div className="detail-val">{detailProg.who_is_it_for}</div>
+                      </div>
+                    )}
+                    {detailProg.notes && (
+                      <div className="detail-section">
+                        <div className="detail-key">Notes for Parents</div>
+                        <div className="detail-val">{detailProg.notes}</div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="prog-grid">
                     {programmes.length === 0 && <p className="empty">No programmes found. Check your Google Sheet.</p>}
                     {programmes.map(p => (
                       <div key={p.name + p.subject} className="prog-card" onClick={() => setDetailProg(p)}>
-                        <div className="prog-name">{p.name}</div>
                         <span className={`tag ${getTagClass(p.subject)}`}>{p.subject}</span>
+                        <div className="prog-name">{p.name}</div>
                         <div className="prog-snippet">{[p.level, p.class_size].filter(Boolean).join(' · ')}</div>
+                        <div className="prog-arrow">View details →</div>
                       </div>
                     ))}
                   </div>
@@ -224,7 +241,7 @@ export default function Home() {
                 {faqCategories.map(cat => (
                   <div key={cat} className="faq-cat-group">
                     <div className="cat-label">{cat}</div>
-                    {faqs.filter(f=>(f.category||'General')===cat).map((f,i)=>(
+                    {faqs.filter(f => (f.category||'General') === cat && f.question && f.answer).map((f,i) => (
                       <div key={i} className="faq-item">
                         <div className="faq-q">{f.question}</div>
                         <div className="faq-a">{f.answer}</div>
@@ -244,12 +261,14 @@ export default function Home() {
         body { background: #FFF9EF; color: #1A1A1A; font-family: 'Poppins', sans-serif; font-size: 14px; line-height: 1.5; }
         .app { min-height: 100vh; display: flex; flex-direction: column; }
 
+        /* HEADER */
         .header { background: #000; height: 60px; padding: 0 24px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
         .logo { width: 34px; height: 34px; background: #FFD817; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800; color: #000; flex-shrink: 0; }
         .header-title { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.2; }
         .header-sub { font-size: 11px; color: #888; }
         .badge { margin-left: auto; background: #FFD817; border-radius: 20px; padding: 4px 12px; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #000; white-space: nowrap; }
 
+        /* LAYOUT */
         .layout { display: grid; grid-template-columns: 230px 1fr; flex: 1; min-height: calc(100vh - 60px); }
         .sidebar { background: #fff; border-right: 1px solid #E8DFC8; padding: 20px 12px; display: flex; flex-direction: column; gap: 3px; }
         .nav-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #888; font-weight: 600; padding: 0 8px; margin-top: 14px; margin-bottom: 4px; }
@@ -258,10 +277,12 @@ export default function Home() {
         .nav-item.active { background: #FFD817; border-color: #E6C200; color: #000; font-weight: 700; }
         .main { padding: 32px 40px; max-width: 820px; }
 
+        /* TYPE */
         .section-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
         .section-sub { font-size: 13px; color: #888; margin-bottom: 24px; line-height: 1.6; }
         .empty { color: #888; font-size: 13px; }
 
+        /* FORM */
         .stack { display: flex; flex-direction: column; gap: 18px; }
         .field-group { display: flex; flex-direction: column; gap: 7px; }
         .field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #2C2C2C; }
@@ -271,34 +292,43 @@ export default function Home() {
         textarea:focus, select:focus { border-color: #E6C200; box-shadow: 0 0 0 3px rgba(255,216,23,0.2); }
         select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23555' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 40px; }
 
+        /* BUTTONS */
         .gen-btn { background: #000; color: #FFD817; border: none; border-radius: 8px; padding: 14px 32px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; letter-spacing: 0.03em; display: inline-flex; align-items: center; gap: 8px; }
         .gen-btn:hover:not(:disabled) { background: #222; transform: translateY(-1px); }
         .gen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-loading { display: inline-flex; align-items: center; gap: 6px; }
-        .btn-loading span { width: 5px; height: 5px; background: #FFD817; border-radius: 50%; animation: bounce 1s infinite; display: inline-block; }
+        .btn-loading { display: inline-flex; align-items: center; gap: 4px; }
+        .btn-loading span:not(:last-child) { width: 5px; height: 5px; background: #FFD817; border-radius: 50%; animation: bounce 1s infinite; display: inline-block; }
         .btn-loading span:nth-child(2) { animation-delay: 0.15s; }
         .btn-loading span:nth-child(3) { animation-delay: 0.3s; }
 
-        .output-card { background: #fff; border: 2px solid #FFD817; border-radius: 12px; margin-top: 22px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        /* OUTPUT */
+        .output-card { background: #fff; border: 2px solid #FFD817; border-radius: 12px; margin-top: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         .output-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid #E8DFC8; background: #FFFBEA; border-radius: 10px 10px 0 0; }
         .output-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #555; }
-        .output-body { padding: 20px 22px; font-size: 14px; color: #1A1A1A; min-height: 80px; }
+        .output-body { padding: 22px 24px; font-size: 14px; color: #1A1A1A; min-height: 80px; }
+        .output-body p { margin-bottom: 14px; line-height: 1.8; }
         .output-body p:last-child { margin-bottom: 0; }
         .copy-btn { background: #FFD817; border: none; border-radius: 8px; padding: 7px 16px; font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 700; color: #000; cursor: pointer; transition: all 0.15s; letter-spacing: 0.02em; }
         .copy-btn:hover { background: #E6C200; }
         .copy-btn.copied { background: #000; color: #FFD817; }
 
+        /* SYNC */
         .sync-bar { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #888; margin-bottom: 20px; padding: 9px 14px; background: #fff; border: 1px solid #E8DFC8; border-radius: 8px; }
         .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #7ED597; flex-shrink: 0; }
         .refresh-btn { background: none; border: none; font-size: 12px; cursor: pointer; color: #888; font-family: 'Poppins', sans-serif; margin-left: auto; }
         .refresh-btn:hover { color: #1A1A1A; }
 
+        /* PROGRAMME GRID */
         .prog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-        .prog-card { background: #fff; border: 1.5px solid #E8DFC8; border-radius: 12px; padding: 16px 18px; cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .prog-card:hover { border-color: #E6C200; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
-        .prog-name { font-size: 14px; font-weight: 700; margin-bottom: 7px; line-height: 1.3; }
-        .prog-snippet { font-size: 12px; color: #888; margin-top: 5px; }
-        .tag { display: inline-block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 4px; padding: 2px 9px; }
+        .prog-card { background: #fff; border: 1.5px solid #E8DFC8; border-radius: 12px; padding: 18px 20px; cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 6px; }
+        .prog-card:hover { border-color: #FFD817; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+        .prog-name { font-size: 14px; font-weight: 700; color: #000; line-height: 1.3; }
+        .prog-snippet { font-size: 12px; color: #888; }
+        .prog-arrow { font-size: 12px; color: #aaa; margin-top: 4px; }
+        .prog-card:hover .prog-arrow { color: #000; }
+
+        /* TAGS */
+        .tag { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; border-radius: 4px; padding: 3px 9px; }
         .tag-maths { background: #FFD817; color: #000; }
         .tag-bloom { background: #FFD817; color: #000; }
         .tag-science { background: #7ED597; color: #000; }
@@ -307,27 +337,32 @@ export default function Home() {
         .tag-brain { background: #FF6632; color: #fff; }
         .tag-holiday { background: #9B59B6; color: #fff; }
 
-        .detail-card { background: #fff; border: 1.5px solid #E8DFC8; border-radius: 12px; padding: 26px 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .back-btn { display: flex; align-items: center; gap: 6px; background: none; border: none; color: #888; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; padding: 0; margin-bottom: 18px; }
+        /* DETAIL */
+        .detail-card { background: #fff; border: 1.5px solid #E8DFC8; border-radius: 12px; padding: 28px 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .back-btn { display: flex; align-items: center; gap: 6px; background: none; border: none; color: #888; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; padding: 0; margin-bottom: 20px; }
         .back-btn:hover { color: #1A1A1A; }
-        .detail-name { font-size: 20px; font-weight: 800; margin-bottom: 16px; }
-        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+        .detail-name { font-size: 20px; font-weight: 800; margin-bottom: 20px; color: #000; }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; background: #FFF9EF; border-radius: 10px; padding: 18px; }
         .detail-item { display: flex; flex-direction: column; gap: 4px; }
-        .detail-item.mb { margin-bottom: 14px; }
         .detail-key { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #888; }
-        .detail-val { font-size: 13.5px; line-height: 1.5; margin-top: 4px; }
-        .divider { border: none; border-top: 1px solid #E8DFC8; margin: 14px 0; }
+        .detail-val { font-size: 13.5px; line-height: 1.5; color: #1A1A1A; font-weight: 500; }
+        .detail-section { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #E8DFC8; }
+        .detail-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .detail-section .detail-key { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #888; margin-bottom: 6px; }
+        .detail-section .detail-val { font-size: 13.5px; line-height: 1.6; color: #333; }
+        .divider { border: none; border-top: 1px solid #E8DFC8; margin: 16px 0; }
 
-        .faq-cat-group { margin-bottom: 28px; }
-        .cat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #888; margin-bottom: 10px; }
-        .faq-item { background: #fff; border: 1.5px solid #E8DFC8; border-radius: 10px; padding: 14px 18px; margin-bottom: 9px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .faq-q { font-weight: 700; font-size: 13.5px; margin-bottom: 6px; }
-        .faq-a { font-size: 13px; color: #555; line-height: 1.6; }
+        /* FAQS */
+        .faq-cat-group { margin-bottom: 32px; }
+        .cat-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #fff; background: #000; padding: 4px 12px; border-radius: 4px; margin-bottom: 14px; display: inline-block; }
+        .faq-item { background: #fff; border: 1.5px solid #E8DFC8; border-radius: 10px; padding: 16px 20px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .faq-q { font-weight: 700; font-size: 13.5px; margin-bottom: 10px; color: #000; line-height: 1.4; }
+        .faq-a { font-size: 13px; color: #555; line-height: 1.7; border-top: 1px solid #F0E9D8; padding-top: 10px; }
 
+        /* LOADING/ERROR */
         .loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; gap: 16px; color: #888; }
-        .error-banner { background: #FFF0F0; border: 1px solid #FFCCCC; border-radius: 8px; padding: 14px 18px; color: #CC4444; font-size: 13px; margin-bottom: 20px; line-height: 1.6; display: flex; align-items: center; gap: 12px; }
+        .error-banner { background: #FFF0F0; border: 1px solid #FFCCCC; border-radius: 8px; padding: 14px 18px; color: #CC4444; font-size: 13px; margin-bottom: 20px; line-height: 1.6; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         .retry-btn { background: none; border: none; font-family: 'Poppins', sans-serif; font-size: 13px; color: #CC4444; text-decoration: underline; cursor: pointer; white-space: nowrap; }
-
         .dots { display: flex; gap: 5px; align-items: center; }
         .dots span { width: 8px; height: 8px; background: #E6C200; border-radius: 50%; animation: bounce 1.2s infinite; opacity: 0.8; }
         .dots span:nth-child(2) { animation-delay: 0.2s; }
