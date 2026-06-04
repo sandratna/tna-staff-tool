@@ -26,7 +26,11 @@ Rules:
 - End with a clear next step or invitation
 - Do NOT sign off — no "The Nuggets Academy team" or any sign-off line
 - Max 3–4 short paragraphs, each separated by a blank line
-- Never write a wall of text — break into short readable paragraphs
+- CRITICAL: Use actual line breaks between paragraphs. Each paragraph must be separated by \n\n
+- Maximum 2-3 sentences per paragraph
+- Never write more than 3 paragraphs total
+- No sign-off line
+- One or two emojis is fine
 - One or two emojis is fine.
 KNOWLEDGE BASE:${progContext}${faqContext}`;
 
