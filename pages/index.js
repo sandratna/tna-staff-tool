@@ -173,8 +173,8 @@ export default function Home() {
                   </div>
                   <div>
                     <button className="gen-btn" onClick={generateReply} disabled={generating || !parentMsg.trim()}>
-                      {generating ? 'Generating...' : '✦ Generate Reply'}
-                    </button>
+                    {generating ? <span className="btn-loading"><span/><span/><span/> Generating reply...</span> : '✦ Generate Reply'}
+                  </button>
                   </div>
                 </div>
 
@@ -183,7 +183,7 @@ export default function Home() {
                     <div className="output-header">
                       <span className="output-label">✓ Ready to send on WhatsApp</span>
                       <button className={`copy-btn${copied?' copied':''}`} onClick={copyReply}>
-                        {copied ? '✓ Copied' : 'Copy'}
+                        {copied ? '✓ Copied to clipboard' : 'Copy to clipboard'}
                       </button>
                     </div>
                     <div className="output-body">
