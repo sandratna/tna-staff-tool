@@ -1,19 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import Head from 'next/head';
 
-const QUICK_CHIPS = [
-  "What subjects do you offer?",
-  "How much is the monthly fee?",
-  "What is the class size?",
-  "Is there a trial class?",
-  "What levels do you teach?",
-  "Where are you located?",
-  "My child is struggling in Maths, can you help?",
-  "Do you have holiday programmes?",
-  "What is the Problem Sums Masterclass?",
-  "What is Brain Train?"
-];
-
 function getTagClass(subject = '') {
   const s = subject.toLowerCase();
   if (s.includes('science')) return 'tag-science';
@@ -125,14 +112,13 @@ export default function Home() {
             {loading && (
               <div className="loading-state">
                 <div className="dots"><span/><span/><span/></div>
-                <p>Loading knowledge base from Google Sheets...</p>
+                <p>Loading knowledge base...</p>
               </div>
             )}
 
             {!loading && dataError && (
               <div className="error-banner">
                 <strong>Could not load data:</strong> {dataError}
-                <br/>Check your GOOGLE_SHEETS_API_KEY and SHEET_ID in Vercel environment variables.
                 <button className="retry-btn" onClick={loadData}>↻ Retry</button>
               </div>
             )}
@@ -153,14 +139,6 @@ export default function Home() {
 
                 <div className="stack">
                   <div className="field-group">
-                    <label className="field-label">Quick fill <span className="label-sub">— tap a common question</span></label>
-                    <div className="chips">
-                      {QUICK_CHIPS.map(q => (
-                        <button key={q} className="chip" onClick={() => setParentMsg(q)}>{q}</button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="field-group">
                     <label className="field-label">Parent's message</label>
                     <textarea value={parentMsg} onChange={e => setParentMsg(e.target.value)} placeholder="Paste the parent's WhatsApp message here..." />
                   </div>
@@ -173,8 +151,10 @@ export default function Home() {
                   </div>
                   <div>
                     <button className="gen-btn" onClick={generateReply} disabled={generating || !parentMsg.trim()}>
-                    {generating ? <span className="btn-loading"><span/><span/><span/> Generating reply...</span> : '✦ Generate Reply'}
-                  </button>
+                      {generating
+                        ? <span className="btn-loading"><span/><span/><span/> Generating reply...</span>
+                        : '✦ Generate Reply'}
+                    </button>
                   </div>
                 </div>
 
@@ -183,14 +163,16 @@ export default function Home() {
                     <div className="output-header">
                       <span className="output-label">✓ Ready to send on WhatsApp</span>
                       <button className={`copy-btn${copied?' copied':''}`} onClick={copyReply}>
-                        {copied ? '✓ Copied to clipboard' : 'Copy to clipboard'}
+                        {copied ? '✓ Copied' : 'Copy to clipboard'}
                       </button>
                     </div>
                     <div className="output-body">
-              {generating ? <div className="dots"><span/><span/><span/></div> : reply.split('\n\n').map((para, i) => (
-                <p key={i} style={{marginBottom: '12px'}}>{para}</p>
-              ))}
-            </div>
+                      {generating
+                        ? <div className="dots"><span/><span/><span/></div>
+                        : reply.split('\n\n').map((para, i) => (
+                            <p key={i} style={{marginBottom:'14px', lineHeight:'1.8'}}>{para}</p>
+                          ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -222,7 +204,7 @@ export default function Home() {
                   <div className="prog-grid">
                     {programmes.length === 0 && <p className="empty">No programmes found. Check your Google Sheet.</p>}
                     {programmes.map(p => (
-                      <div key={p.name} className="prog-card" onClick={() => setDetailProg(p)}>
+                      <div key={p.name + p.subject} className="prog-card" onClick={() => setDetailProg(p)}>
                         <div className="prog-name">{p.name}</div>
                         <span className={`tag ${getTagClass(p.subject)}`}>{p.subject}</span>
                         <div className="prog-snippet">{[p.level, p.class_size].filter(Boolean).join(' · ')}</div>
@@ -262,14 +244,12 @@ export default function Home() {
         body { background: #FFF9EF; color: #1A1A1A; font-family: 'Poppins', sans-serif; font-size: 14px; line-height: 1.5; }
         .app { min-height: 100vh; display: flex; flex-direction: column; }
 
-        /* Header */
         .header { background: #000; height: 60px; padding: 0 24px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
         .logo { width: 34px; height: 34px; background: #FFD817; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800; color: #000; flex-shrink: 0; }
         .header-title { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.2; }
         .header-sub { font-size: 11px; color: #888; }
         .badge { margin-left: auto; background: #FFD817; border-radius: 20px; padding: 4px 12px; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #000; white-space: nowrap; }
 
-        /* Layout */
         .layout { display: grid; grid-template-columns: 230px 1fr; flex: 1; min-height: calc(100vh - 60px); }
         .sidebar { background: #fff; border-right: 1px solid #E8DFC8; padding: 20px 12px; display: flex; flex-direction: column; gap: 3px; }
         .nav-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #888; font-weight: 600; padding: 0 8px; margin-top: 14px; margin-bottom: 4px; }
@@ -278,54 +258,41 @@ export default function Home() {
         .nav-item.active { background: #FFD817; border-color: #E6C200; color: #000; font-weight: 700; }
         .main { padding: 32px 40px; max-width: 820px; }
 
-        /* Type */
         .section-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
         .section-sub { font-size: 13px; color: #888; margin-bottom: 24px; line-height: 1.6; }
         .empty { color: #888; font-size: 13px; }
 
-        /* Form elements */
         .stack { display: flex; flex-direction: column; gap: 18px; }
         .field-group { display: flex; flex-direction: column; gap: 7px; }
         .field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #2C2C2C; }
         .label-sub { font-size: 12px; font-weight: 400; text-transform: none; letter-spacing: 0; color: #888; }
         textarea, select { background: #fff; border: 1.5px solid #E8DFC8; border-radius: 12px; color: #1A1A1A; font-family: 'Poppins', sans-serif; font-size: 13.5px; padding: 12px 15px; width: 100%; outline: none; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: border-color 0.2s, box-shadow 0.2s; resize: vertical; }
-        textarea { min-height: 110px; }
+        textarea { min-height: 120px; }
         textarea:focus, select:focus { border-color: #E6C200; box-shadow: 0 0 0 3px rgba(255,216,23,0.2); }
         select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23555' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 40px; }
 
-        /* Chips */
-        .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-        .chip { background: #F0E9D8; border: none; border-radius: 20px; padding: 5px 13px; font-size: 12px; font-weight: 500; color: #555; cursor: pointer; font-family: 'Poppins', sans-serif; transition: all 0.15s; }
-.chip:hover { background: #FFD817; color: #000; }
-        /* Buttons */
-        .gen-btn { background: #000; color: #FFD817; border: none; border-radius: 8px; padding: 14px 32px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; letter-spacing: 0.03em; }
-.gen-btn:hover:not(:disabled) { background: #222; transform: translateY(-1px); }
-        .gen-btn:hover:not(:disabled) { background: #E6C200; transform: translateY(-1px); }
+        .gen-btn { background: #000; color: #FFD817; border: none; border-radius: 8px; padding: 14px 32px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; letter-spacing: 0.03em; display: inline-flex; align-items: center; gap: 8px; }
+        .gen-btn:hover:not(:disabled) { background: #222; transform: translateY(-1px); }
         .gen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-loading { display: inline-flex; align-items: center; gap: 6px; }
-.btn-loading span { width: 6px; height: 6px; background: #000; border-radius: 50%; animation: bounce 1s infinite; display: inline-block; }
-.btn-loading span:nth-child(2) { animation-delay: 0.15s; }
-.btn-loading span:nth-child(3) { animation-delay: 0.3s; }
-        .retry-btn { background: none; border: none; font-family: 'Poppins', sans-serif; font-size: 13px; color: #CC4444; text-decoration: underline; cursor: pointer; margin-left: 10px; }
+        .btn-loading span { width: 5px; height: 5px; background: #FFD817; border-radius: 50%; animation: bounce 1s infinite; display: inline-block; }
+        .btn-loading span:nth-child(2) { animation-delay: 0.15s; }
+        .btn-loading span:nth-child(3) { animation-delay: 0.3s; }
+
+        .output-card { background: #fff; border: 2px solid #FFD817; border-radius: 12px; margin-top: 22px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .output-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid #E8DFC8; background: #FFFBEA; border-radius: 10px 10px 0 0; }
+        .output-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #555; }
+        .output-body { padding: 20px 22px; font-size: 14px; color: #1A1A1A; min-height: 80px; }
+        .output-body p:last-child { margin-bottom: 0; }
+        .copy-btn { background: #FFD817; border: none; border-radius: 8px; padding: 7px 16px; font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 700; color: #000; cursor: pointer; transition: all 0.15s; letter-spacing: 0.02em; }
+        .copy-btn:hover { background: #E6C200; }
+        .copy-btn.copied { background: #000; color: #FFD817; }
+
+        .sync-bar { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #888; margin-bottom: 20px; padding: 9px 14px; background: #fff; border: 1px solid #E8DFC8; border-radius: 8px; }
+        .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #7ED597; flex-shrink: 0; }
         .refresh-btn { background: none; border: none; font-size: 12px; cursor: pointer; color: #888; font-family: 'Poppins', sans-serif; margin-left: auto; }
         .refresh-btn:hover { color: #1A1A1A; }
 
-        /* Output */
-        .output-card { background: #fff; border: 2px solid #FFD817; border-radius: 12px; margin-top: 22px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-        .output-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid #E8DFC8; background: #FFF9D0; border-radius: 10px 10px 0 0; }
-        .output-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
-        .output-body { padding: 18px 20px; font-size: 14px; line-height: 1.8; white-space: pre-wrap; min-height: 80px; }
-        .copy-btn { background: #FFD817; border: none; border-radius: 8px; padding: 7px 18px; font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 700; color: #000; cursor: pointer; transition: all 0.15s; letter-spacing: 0.02em; }
-.copy-btn:hover { background: #E6C200; }
-.copy-btn.copied { background: #000; color: #FFD817; }
-        .copy-btn:hover { background: #2C2C2C; }
-        .copy-btn.copied { background: #2E8B57; color: #fff; }
-
-        /* Sync */
-        .sync-bar { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #888; margin-bottom: 20px; padding: 9px 14px; background: #fff; border: 1px solid #E8DFC8; border-radius: 8px; }
-        .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #7ED597; flex-shrink: 0; }
-
-        /* Programmes */
         .prog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
         .prog-card { background: #fff; border: 1.5px solid #E8DFC8; border-radius: 12px; padding: 16px 18px; cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .prog-card:hover { border-color: #E6C200; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
@@ -340,8 +307,7 @@ export default function Home() {
         .tag-brain { background: #FF6632; color: #fff; }
         .tag-holiday { background: #9B59B6; color: #fff; }
 
-        /* Detail */
-        .detail-card { background: #fff; border: 1.5px solid #E8DFC8; border-radius: 12px; padding: 26px 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .detail-card { background: #fff; border: 1.5px solid #E8DFC8; border-radius: 12px; padding: 26px 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         .back-btn { display: flex; align-items: center; gap: 6px; background: none; border: none; color: #888; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; padding: 0; margin-bottom: 18px; }
         .back-btn:hover { color: #1A1A1A; }
         .detail-name { font-size: 20px; font-weight: 800; margin-bottom: 16px; }
@@ -352,16 +318,16 @@ export default function Home() {
         .detail-val { font-size: 13.5px; line-height: 1.5; margin-top: 4px; }
         .divider { border: none; border-top: 1px solid #E8DFC8; margin: 14px 0; }
 
-        /* FAQs */
         .faq-cat-group { margin-bottom: 28px; }
         .cat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #888; margin-bottom: 10px; }
         .faq-item { background: #fff; border: 1.5px solid #E8DFC8; border-radius: 10px; padding: 14px 18px; margin-bottom: 9px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .faq-q { font-weight: 700; font-size: 13.5px; margin-bottom: 6px; }
         .faq-a { font-size: 13px; color: #555; line-height: 1.6; }
 
-        /* Loading/error */
         .loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; gap: 16px; color: #888; }
-        .error-banner { background: #FFF0F0; border: 1px solid #FFCCCC; border-radius: 8px; padding: 14px 18px; color: #CC4444; font-size: 13px; margin-bottom: 20px; line-height: 1.6; }
+        .error-banner { background: #FFF0F0; border: 1px solid #FFCCCC; border-radius: 8px; padding: 14px 18px; color: #CC4444; font-size: 13px; margin-bottom: 20px; line-height: 1.6; display: flex; align-items: center; gap: 12px; }
+        .retry-btn { background: none; border: none; font-family: 'Poppins', sans-serif; font-size: 13px; color: #CC4444; text-decoration: underline; cursor: pointer; white-space: nowrap; }
+
         .dots { display: flex; gap: 5px; align-items: center; }
         .dots span { width: 8px; height: 8px; background: #E6C200; border-radius: 50%; animation: bounce 1.2s infinite; opacity: 0.8; }
         .dots span:nth-child(2) { animation-delay: 0.2s; }
